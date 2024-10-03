@@ -1,24 +1,24 @@
-// HomePage.js
 "use client";
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import ProductsClient from './components/ProductsClient';
-import { fetchProducts } from './utils/api';
+import CategoryFilter from './components/CategoryFilter';
+import Searchbar from './components/Searchbar';
+import SortOptions from './components/SortOptions';
+import Pagination from './components/Pagination';
 
-export default function HomePage({ searchParams }) {
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const products = await fetchProducts(searchParams);
-      console.log('Fetched on page load:', products); // Debug log
-    };
-    fetchData();
-  }, [searchParams]);
+export default function Page() {
+  const [category, setCategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState('asc');
+  const [page, setPage] = useState(1);
 
   return (
     <div>
-      <ProductsClient searchParams={searchParams} />
+      <CategoryFilter selectedCategory={category} setSelectedCategory={setCategory} />
+      <Searchbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <SortOptions sortOption={sortOption} setSortOption={setSortOption} />
+      <ProductsClient category={category} searchQuery={searchQuery} sortOption={sortOption} page={page} />
+      <Pagination page={page} setPage={setPage} />
     </div>
   );
 }

@@ -1,94 +1,52 @@
-'use client'; // This makes the component a Client Component
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import SearchBar from './SearchBar';
-import CategoryFilter from './CategoryFilter';
-import Pagination from './Pagination';
-import ProductGrid from './ProductGrid';
-import SortOptions from './SortOptions'; 
-import ResetButton from './ResetButton'; 
+import { collection, query, where, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { db } from '../firebaseConfig';
+import ProductGrid from './ProductGrid';
 
-/**
- * ProductsClient component handles product filtering, sorting, and pagination.
- *
- * @param {Object} props - The component props
- * @param {Array} props.products - The list of products to display
- * @returns {JSX.Element} The ProductsClient component
- */
-export default function ProductsClient({ products }) {
-  const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || "");
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || "");
-  const [sortOption, setSortOption] = useState(searchParams.get('sort') || "asc");
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-
-  useEffect(() => {
-    const applyFilters = () => {
-      let filtered = products;
+export default function ProductsClient({ category, searchQuery, sortOption, page }) {
+  const [products, setProducts] = useState([]);
+  const [lastDoc, setLastDoc] = useState(null);
+  const [loading, setLoading] = useState(false);
+  
+  const fetchProducts = async () => {
+    setLoading(true);
+    
+    try {
+      let productQuery = query(collection(db, 'products'), limit(20));
+      
+      if (category) {
+        productQuery = query(productQuery, where('category', '==', category));
+      }
 
       if (searchQuery) {
-        filtered = filtered.filter(product => 
-          product.title.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        productQuery = query(productQuery, where('title', '>=', searchQuery));
       }
 
-      if (selectedCategory) {
-        filtered = filtered.filter(product => 
-          product.category === selectedCategory
-        );
+      if (sortOption) {
+        productQuery = query(productQuery, orderBy('price', sortOption === 'asc' ? 'asc' : 'desc'));
       }
 
-      if (sortOption === "asc") {
-        filtered.sort((a, b) => a.price - b.price);
-      } else if (sortOption === "desc") {
-        filtered.sort((a, b) => b.price - a.price);
-      }
+      const productSnapshot = await getDocs(productQuery);
+      const productList = productSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      
+      setLastDoc(productSnapshot.docs[productSnapshot.docs.length - 1]);
+      setProducts(productList);
+      
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
 
-      const pages = Math.ceil(filtered.length / 20); 
-      setTotalPages(pages);
-      const startIndex = (currentPage - 1) * 20;
-      setFilteredProducts(filtered.slice(startIndex, startIndex + 20));
-    };
-
-    applyFilters();
-  }, [products, searchQuery, selectedCategory, sortOption, currentPage]);
-
-  const resetFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("");
-    setSortOption("asc");
-    setCurrentPage(1);
+    setLoading(false);
   };
 
-  const handlePageChange = (page) => {
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set('page', page);
-    window.history.pushState({}, '', `${window.location.pathname}?${newParams}`);
-    setCurrentPage(page);
-  };
+  useEffect(() => {
+    fetchProducts();
+  }, [category, searchQuery, sortOption, page]);
 
-  return (
-    <>
-      {/* Container for filter controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        <div className="flex flex-col md:flex-row space-x-2 md:space-x-4">
-          <CategoryFilter selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
-          <SortOptions sortOption={sortOption} setSortOption={setSortOption} />
-          <ResetButton resetFilters={resetFilters} /> {/* Reset Button */}
-        </div>
-      </div>
-      {/* Product Grid */}
-      <ProductGrid products={filteredProducts} />
-      {/* Pagination controls */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-    </>
-  );
+  return <ProductGrid products={products} loading={loading} />;
 }

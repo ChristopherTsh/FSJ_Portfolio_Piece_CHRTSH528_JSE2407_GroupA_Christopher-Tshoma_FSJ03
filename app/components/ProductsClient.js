@@ -1,53 +1,43 @@
-"use client";
-import { useState } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import ProductGrid from './ProductGrid';
-import CategoryFilter from './CategoryFilter';
+import Pagination from './Pagination';
 import Searchbar from './Searchbar';
 import SortOptions from './SortOptions';
-import Pagination from './Pagination';
+import CategoryFilter from './CategoryFilter';
 
-/**
- * ProductsClient component that handles the product grid display, filtering, searching, and sorting.
- * 
- * @param {Array} products - The list of products passed from Firebase.
- * @returns {JSX.Element} The rendered ProductsClient component.
- */
-export default function ProductsClient({ products }) {
-  const [category, setCategory] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState('asc');
-  const [filteredProducts, setFilteredProducts] = useState(products);
+export default function ProductsClient() {
+    const [products, setProducts] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [sortOption, setSortOption] = useState('');
+    const [page, setPage] = useState(1);
+    const limit = 20;
 
-  // Apply filters when category, search, or sort option changes
-  const applyFilters = () => {
-    let updatedProducts = [...products];
+    useEffect(() => {
+        async function fetchProducts() {
+            const params = new URLSearchParams({
+                search: searchQuery,
+                category: selectedCategory,
+                sort: sortOption,
+                page,
+                limit,
+            });
+            const res = await fetch(`/api/products?${params}`);
+            const data = await res.json();
+            setProducts(data);
+        }
+        fetchProducts();
+    }, [searchQuery, selectedCategory, sortOption, page]);
 
-    if (category) {
-      updatedProducts = updatedProducts.filter((product) => product.category === category);
-    }
-
-    if (searchQuery) {
-      updatedProducts = updatedProducts.filter((product) =>
-        product.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (sortOption === 'asc') {
-      updatedProducts.sort((a, b) => a.price - b.price);
-    } else if (sortOption === 'desc') {
-      updatedProducts.sort((a, b) => b.price - a.price);
-    }
-
-    setFilteredProducts(updatedProducts);
-  };
-
-  return (
-    <div>
-      <CategoryFilter selectedCategory={category} setSelectedCategory={setCategory} />
-      <Searchbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <SortOptions sortOption={sortOption} setSortOption={setSortOption} />
-      <ProductGrid products={filteredProducts} />
-      <Pagination />
-    </div>
-  );
+    return (
+        <div>
+            <Searchbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+            <CategoryFilter selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+            <SortOptions sortOption={sortOption} setSortOption={setSortOption} />
+            <ProductGrid products={products} />
+            <Pagination page={page} setPage={setPage} />
+        </div>
+    );
 }

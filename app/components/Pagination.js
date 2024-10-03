@@ -1,22 +1,29 @@
-// app/components/Pagination.js
-export default function Pagination({ currentPage, totalPages, onPageChange }) {
+export default function Pagination({ page, setPage }) {
+  const handlePrevious = () => {
+      if (page > 1) {
+          setPage(page - 1);
+      }
+  };
+
+  const handleNext = () => {
+      setPage(page + 1);
+  };
+
   return (
-    <div className="flex justify-center mt-4">
-      <button
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
-        className="bg-gray-300 text-black px-4 py-2 rounded-md disabled:opacity-50"
-      >
-        Previous
-      </button>
-      <span className="mx-2">Page {currentPage} of {totalPages}</span>
-      <button
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-        className="bg-gray-300 text-black px-4 py-2 rounded-md disabled:opacity-50"
-      >
-        Next
-      </button>
-    </div>
+      <div className="flex justify-between mt-4">
+          <button
+              onClick={handlePrevious}
+              disabled={page === 1}
+              className="bg-gray-300 text-gray-700 p-2 rounded disabled:opacity-50"
+          >
+              Previous
+          </button>
+          <button
+              onClick={handleNext}
+              className="bg-gray-300 text-gray-700 p-2 rounded"
+          >
+              Next
+          </button>
+      </div>
   );
 }

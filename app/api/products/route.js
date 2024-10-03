@@ -1,4 +1,4 @@
-import { db } from '@/firebase';
+import { db } from '../../firebaseConfig';
 import { collection, query, orderBy, startAfter, limit, getDocs, where } from 'firebase/firestore';
 import Fuse from 'fuse.js';
 

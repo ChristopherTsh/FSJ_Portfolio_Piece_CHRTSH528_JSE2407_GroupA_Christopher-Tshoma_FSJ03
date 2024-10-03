@@ -1,19 +1,40 @@
 import './globals.css';
 import Footer from './components/Footer';
-import MetaTags from './components/MetaTags'; // Rendering MetaTags
+import MetaTags from './components/MetaTags';
 import ProductsClient from './components/ProductsClient';
+import { collection, query, getDocs, where, orderBy } from 'firebase/firestore';
+import { db } from './firebaseConfig';
 
 /**
- * Fetches all products from the API for initial rendering with caching.
+ * Fetches products from Firebase based on search, category, and sort options.
  * 
- * @returns {Promise<Object>} The fetched products data.
+ * @param {string} searchQuery - Search string entered by the user.
+ * @param {string} category - Selected category for filtering products.
+ * @param {string} sortOption - Sort option for ordering products.
+ * @returns {Promise<Array>} The fetched products data.
  */
-async function fetchProducts() {
-  const res = await fetch(`https://next-ecommerce-api.vercel.app/products?limit=200`, {
-    cache: 'force-cache',
-  });
-  if (!res.ok) throw new Error('Failed to fetch products');
-  return res.json();
+async function fetchProducts(searchQuery = '', category = '', sortOption = 'asc') {
+  let productQuery = query(collection(db, 'products'));
+
+  if (category) {
+    productQuery = query(productQuery, where('category', '==', category));
+  }
+
+  if (searchQuery) {
+    productQuery = query(productQuery, where('title', '>=', searchQuery));
+  }
+
+  if (sortOption) {
+    productQuery = query(productQuery, orderBy('price', sortOption === 'asc' ? 'asc' : 'desc'));
+  }
+
+  const querySnapshot = await getDocs(productQuery);
+  const products = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  return products;
 }
 
 /**

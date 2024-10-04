@@ -1,5 +1,5 @@
 'use client'; // Enable client-side rendering
-
+//App/components/ResetButton.js 
 /**
  * ResetButton component that resets the filters and search query.
  * 

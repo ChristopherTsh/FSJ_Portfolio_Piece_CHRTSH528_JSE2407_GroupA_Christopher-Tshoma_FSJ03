@@ -1,3 +1,4 @@
+//App/products/[id]/page.js
 import Link from "next/link";
 import ProductDetail from "./ProductImageGallery"; // Import ProductDetail component
 

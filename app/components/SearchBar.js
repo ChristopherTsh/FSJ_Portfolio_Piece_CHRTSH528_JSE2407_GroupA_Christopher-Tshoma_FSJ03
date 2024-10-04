@@ -1,3 +1,4 @@
+//App/componets/Searchbar
 export default function Searchbar({ searchQuery, setSearchQuery }) {
   return (
       <input

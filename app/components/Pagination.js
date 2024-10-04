@@ -1,3 +1,4 @@
+//App/componets/pagination
 export default function Pagination({ page, setPage }) {
   const handlePrevious = () => {
       if (page > 1) {

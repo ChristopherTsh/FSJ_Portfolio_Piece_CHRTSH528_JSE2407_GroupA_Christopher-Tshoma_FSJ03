@@ -1,5 +1,5 @@
 "use client"; // Enable client-side rendering
-
+//App/products/[id]/ProductImageGallery.js
 import { useState } from "react";
 
 /**

@@ -46,11 +46,11 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link href="/login" legacyBehavior>
-              <a className="bg-blue-500 px-4 py-2 rounded">Login</a>
+            <Link href="/login" className="bg-blue-500 px-4 py-2 rounded">
+              Login
             </Link>
-            <Link href="/signup" legacyBehavior>
-              <a className="bg-green-500 px-4 py-2 rounded">Sign Up</a>
+            <Link href="/signup" className="bg-green-500 px-4 py-2 rounded">
+              Sign Up
             </Link>
           </>
         )}

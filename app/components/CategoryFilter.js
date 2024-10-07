@@ -2,7 +2,7 @@
 //App/components/category
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../lib/firebaseConfig"; // Import Firestore instance
+import { db } from "../../lib/products"; // Import Firestore instance
 
 /**
  * CategoryFilter component allows users to filter products by category.

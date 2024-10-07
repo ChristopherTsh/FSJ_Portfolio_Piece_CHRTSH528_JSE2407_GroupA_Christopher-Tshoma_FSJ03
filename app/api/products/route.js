@@ -1,5 +1,5 @@
 //App/produts/route.js 
-import { db } from '../../../lib/firebaseConfig';
+import { db } from '../../../lib/products';
 import { collection, query, orderBy, startAfter, limit, getDocs, where } from 'firebase/firestore';
 import Fuse from 'fuse.js';
 

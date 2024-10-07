@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; // Import Firebase Firestore
+import { db } from '../../lib/firebaseConfig'; // Import Firebase Firestore
 import ProductGrid from './ProductGrid';
 import Pagination from './Pagination';
 import Searchbar from './Searchbar';

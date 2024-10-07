@@ -3,7 +3,7 @@ import Footer from './components/Footer';
 import MetaTags from './components/MetaTags';
 import ProductsClient from './components/ProductsClient';
 import { collection, query, getDocs, where, orderBy } from 'firebase/firestore';
-import { db } from './firebaseConfig';
+import { db } from '../lib/firebaseConfig';
 import Navbar from './components/Navbar';
 
 /**

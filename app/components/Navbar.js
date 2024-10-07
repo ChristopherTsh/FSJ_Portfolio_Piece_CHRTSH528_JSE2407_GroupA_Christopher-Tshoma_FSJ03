@@ -1,19 +1,15 @@
-// app/components/Navbar.js
+'use client'; // Enable client-side rendering
 
-"use client";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { auth } from "../../lib/firebaseConfig";
-import { signOut } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { auth } from '../../lib/firebaseConfig'; // Adjust the path if necessary
+import { onAuthStateChanged } from 'firebase/auth';
 
-export default function Navbar() {
+const Navbar = () => {
   const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
       } else {
@@ -21,69 +17,46 @@ export default function Navbar() {
       }
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe(); // Clean up the subscription on unmount
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      router.push("/");  // Redirect to home or login page after sign-out
-    } catch (error) {
-      setError(error.message);
-    }
+  const handleLogout = async () => {
+    await auth.signOut();
+    setUser(null); // Clear user state after logout
   };
 
   return (
-    <nav className="bg-gray-800 p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        {/* Site Logo */}
-        <Link href="/" legacyBehavior>
-          <a className="text-white font-semibold text-lg">E-Commerce Site</a>
+    <nav className="bg-gray-800 p-4 text-white flex justify-between">
+      <div className="flex items-center space-x-4">
+        <Link href="/">
+          <h1 className="text-lg font-bold">E-Commerce</h1>
         </Link>
-
-        {/* Navigation Links */}
-        <div className="flex space-x-4">
-          <Link href="/products" legacyBehavior>
-            <a className="text-gray-300 hover:text-white transition duration-200">Products</a>
-          </Link>
-          {user && (
-            <Link href="/my-account" legacyBehavior>
-              <a className="text-gray-300 hover:text-white transition duration-200">
-                My Account
-              </a>
+        <Link href="/products">Products</Link>
+      </div>
+      <div className="flex items-center space-x-4">
+        {user ? (
+          <>
+            <span>Welcome, {user.displayName || user.email}</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 px-4 py-2 rounded"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link href="/login" legacyBehavior>
+              <a className="bg-blue-500 px-4 py-2 rounded">Login</a>
             </Link>
-          )}
-        </div>
-
-        {/* Authentication UI */}
-        <div className="flex space-x-4">
-          {!user ? (
-            <>
-              <Link href="/sign-in" legacyBehavior>
-                <a className="text-gray-300 hover:text-white transition duration-200">
-                  Log In
-                </a>
-              </Link>
-              <Link href="/sign-up" legacyBehavior>
-                <a className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition duration-200">
-                  Sign Up
-                </a>
-              </Link>
-            </>
-          ) : (
-            <div className="flex items-center space-x-3">
-              <span className="text-white">{user.email}</span>
-              <button
-                onClick={handleSignOut}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition duration-200"
-              >
-                Sign Out
-              </button>
-            </div>
-          )}
-        </div>
+            <Link href="/signup" legacyBehavior>
+              <a className="bg-green-500 px-4 py-2 rounded">Sign Up</a>
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );
-}
+};
+
+export default Navbar;

@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { signUp, signIn } from '../lib/auth';
+import { signUp, signIn } from '../../lib/auth';
 import { useRouter } from 'next/navigation';
 
 export default function AuthForm({ mode }) {

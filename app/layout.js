@@ -4,6 +4,7 @@ import MetaTags from './components/MetaTags';
 import ProductsClient from './components/ProductsClient';
 import { collection, query, getDocs, where, orderBy } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import Navbar from './components/Navbar';
 
 /**
  * Fetches products from Firebase based on search, category, and sort options.
@@ -53,6 +54,7 @@ export default async function RootLayout({ children }) {
         <MetaTags title="E-Commerce Site" description="Shop for the best products" />
       </head>
       <body>
+        <Navbar />
         <div className="max-w-7xl mx-auto p-4">
           <h1 className="text-2xl font-bold mb-4">Product List</h1>
           <ProductsClient products={products} />

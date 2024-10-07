@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { useAuth } from './auth'; // Custom hook to track auth state
-import { logOut } from './auth'; // Logout function
+import { useAuth } from '../../lib/auth'; // Custom hook to track auth state
+import { logOut } from '../../lib/logout'; // Logout function
 
 export default function Navbar() {
   const user = useAuth();

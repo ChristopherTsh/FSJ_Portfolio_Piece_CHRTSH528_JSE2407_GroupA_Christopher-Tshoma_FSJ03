@@ -1,5 +1,4 @@
 "use client"; // Enable client-side rendering
-//App/products/[id]/ProductImageGallery.js
 import { useState } from "react";
 
 /**
@@ -38,11 +37,10 @@ export default function ProductDetail({ product }) {
     reviews,
   } = product;
 
-  // State to store the currently selected image for the gallery
   const [currentImage, setCurrentImage] = useState(images[0]);
-
-  // State for sorting reviews
   const [sortCriteria, setSortCriteria] = useState("date"); // Default sorting by date
+  const [currentPage, setCurrentPage] = useState(1);
+  const reviewsPerPage = 5;
 
   /**
    * Handles image load error by falling back to the thumbnail image.
@@ -73,11 +71,18 @@ export default function ProductDetail({ product }) {
     ? (price - (price * discountPercentage) / 100).toFixed(2)
     : price;
 
+  // Pagination logic for reviews
+  const paginatedReviews = sortReviews(reviews, sortCriteria).slice(
+    (currentPage - 1) * reviewsPerPage,
+    currentPage * reviewsPerPage
+  );
+
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+
   return (
     <div className="font-sans bg-white text-black">
       <div className="p-4 lg:max-w-7xl max-w-2xl max-lg:mx-auto">
         <div className="grid items-start grid-cols-1 lg:grid-cols-5 gap-12">
-          
           {/* Image Gallery Section */}
           <div className="lg:col-span-3 w-full lg:sticky top-0 text-center">
             {/* Main Product Image */}
@@ -120,11 +125,7 @@ export default function ProductDetail({ product }) {
               {[...Array(5)].map((_, i) => (
                 <svg
                   key={i}
-                  className={`w-[18px] ${
-                    i < Math.round(rating)
-                      ? "fill-yellow-300"
-                      : "fill-[#CED5D8]"
-                  }`}
+                  className={`w-[18px] ${i < Math.round(rating) ? "fill-yellow-300" : "fill-[#CED5D8]"}`}
                   viewBox="0 0 14 13"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -132,9 +133,7 @@ export default function ProductDetail({ product }) {
                   <path d="M7 0L9.4687 3.60213L13.6574 4.83688L10.9944 8.29787L11.1145 12.6631L7 11.2L2.8855 12.6631L3.00556 8.29787L0.342604 4.83688L4.5313 3.60213L7 0Z" />
                 </svg>
               ))}
-              <h4 className="text-black text-base ml-2">
-                {rating.toFixed(2)} / 5
-              </h4>
+              <h4 className="text-black text-base ml-2">{rating.toFixed(2)} / 5</h4>
             </div>
 
             {/* Pricing Section */}
@@ -143,20 +142,14 @@ export default function ProductDetail({ product }) {
               {discountPercentage && (
                 <p className="text-gray-400 text-base">
                   <strike>${price}</strike>{" "}
-                  <span className="text-sm ml-1">
-                    ({discountPercentage}% off)
-                  </span>
+                  <span className="text-sm ml-1">({discountPercentage}% off)</span>
                 </p>
               )}
             </div>
             <p className="text-gray-400 text-base mt-2">Tax included</p>
 
             {/* Stock & Availability */}
-            <p
-              className={`mt-4 ${
-                stock > 0 ? "text-green-400" : "text-red-400"
-              }`}
-            >
+            <p className={`mt-4 ${stock > 0 ? "text-green-400" : "text-red-400"}`}>
               {stock > 0 ? `In stock (${stock} available)` : "Out of stock"}
             </p>
 
@@ -210,47 +203,52 @@ export default function ProductDetail({ product }) {
                   onChange={(e) => setSortCriteria(e.target.value)}
                   className="border border-gray-300 rounded p-2"
                 >
-                  <option value="date">Date</option>
-                  <option value="rating">Rating</option>
+                  <option value="date">Most Recent</option>
+                  <option value="rating">Highest Rating</option>
                 </select>
               </div>
 
-              {reviews.length > 0 ? (
-                <ul className="space-y-4 mt-4">
-                  {sortReviews(reviews, sortCriteria).map((review, index) => (
-                    <li key={index} className="bg-gray-200 p-4 rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-lg font-semibold">
-                          {review.reviewerName}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          {new Date(review.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <p className="mt-2 text-gray-700">{review.comment}</p>
-                      <div className="flex items-center mt-2">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`w-[16px] ${
-                              i < review.rating
-                                ? "fill-yellow-300"
-                                : "fill-[#CED5D8]"
-                            }`}
-                            viewBox="0 0 14 13"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M7 0L9.4687 3.60213L13.6574 4.83688L10.9944 8.29787L11.1145 12.6631L7 11.2L2.8855 12.6631L3.00556 8.29787L0.342604 4.83688L4.5313 3.60213L7 0Z" />
-                          </svg>
-                        ))}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-600 mt-4">No reviews yet.</p>
-              )}
+              {/* Review List */}
+              {paginatedReviews.map((review, index) => (
+                <div key={index} className="mt-4 p-4 border border-gray-200 rounded">
+                  <div className="flex justify-between">
+                    <p className="font-semibold">{review.reviewerName}</p>
+                    <p className="text-sm text-gray-500">{review.date}</p>
+                  </div>
+                  <div className="flex items-center mt-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i}
+                        className={`w-[14px] ${i < review.rating ? "fill-yellow-300" : "fill-[#CED5D8]"}`}
+                        viewBox="0 0 14 13"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M7 0L9.4687 3.60213L13.6574 4.83688L10.9944 8.29787L11.1145 12.6631L7 11.2L2.8855 12.6631L3.00556 8.29787L0.342604 4.83688L4.5313 3.60213L7 0Z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-gray-600 mt-2">{review.comment}</p>
+                </div>
+              ))}
+
+              {/* Pagination Controls */}
+              <div className="flex justify-center gap-4 mt-6">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  className="px-4 py-2 border rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  className="px-4 py-2 border rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         </div>

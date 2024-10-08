@@ -1,4 +1,4 @@
-import { db } from '../products';
+import { db } from '../../products/products';
 import { collection, query, orderBy, startAfter, limit, getDocs, where } from 'firebase/firestore';
 import Fuse from 'fuse.js';
 

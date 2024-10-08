@@ -3,25 +3,33 @@
 import { useState } from 'react';
 import { auth } from '../../lib/firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import ErrorMessage from './ErrorMessage';
+import Loading from './Loading';
 import { useRouter } from 'next/navigation';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signIn(email, password);
       router.push('/'); // Redirect to home after successful login
     } catch (err) {
-      setError(err.message); // Set error message
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (loading) return <Loading />;
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">
@@ -35,7 +43,7 @@ const Login = () => {
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Sign in to your account
             </h1>
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <ErrorMessage message={error} />}
             <form className="space-y-4 md:space-y-6" onSubmit={handleLogin}>
               <div>
                 <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>

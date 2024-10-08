@@ -1,49 +1,38 @@
-// app/products/page.js
-import ProductsClient from '../components/ProductsClient';
-import { collection, query, getDocs, where, orderBy } from 'firebase/firestore';
 import { db } from '../../lib/firebaseConfig';
+import { collection, query, getDocs, orderBy, where, limit, startAfter } from 'firebase/firestore';
+import Fuse from 'fuse.js';
 
-/**
- * Fetches products from Firebase based on search, category, and sort options.
- * 
- * @param {string} searchQuery - Search string entered by the user.
- * @param {string} category - Selected category for filtering products.
- * @param {string} sortOption - Sort option for ordering products.
- * @returns {Promise<Array>} The fetched products data.
- */
-async function fetchProducts(searchQuery = '', category = '', sortOption = 'asc') {
-  let productQuery = query(collection(db, 'products'));
+export default async function handler(req, res) {
+  const { search, category, sort, page, pageSize } = req.query;
 
-  if (category) {
-    productQuery = query(productQuery, where('category', '==', category));
+  try {
+    const productsRef = collection(db, 'products');
+    let q = query(productsRef);
+    
+    // Category filter
+    if (category && category !== 'All') {
+      q = query(q, where('category', '==', category));
+    }
+
+    // Fetch products
+    const snapshot = await getDocs(q);
+    const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Fuse.js for searching by title
+    if (search) {
+      const fuse = new Fuse(products, { keys: ['title'] });
+      products = fuse.search(search).map(result => result.item);
+    }
+
+    // Sort products
+    products.sort((a, b) => (sort === 'asc' ? a.price - b.price : b.price - a.price));
+
+    // Pagination logic
+    const paginatedProducts = products.slice((page - 1) * pageSize, page * pageSize);
+
+    res.status(200).json(paginatedProducts);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Error fetching products' });
   }
-
-  if (searchQuery) {
-    productQuery = query(productQuery, where('title', '>=', searchQuery));
-  }
-
-  if (sortOption) {
-    productQuery = query(productQuery, orderBy('price', sortOption === 'asc' ? 'asc' : 'desc'));
-  }
-
-  const querySnapshot = await getDocs(productQuery);
-  const products = querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-
-  return products;
 }
-
-const ProductsPage = async () => {
-  const products = await fetchProducts(); // Fetch products here
-
-  return (
-    <>
-      <h1 className="text-2xl font-bold mb-4">Product List</h1>
-      <ProductsClient products={products} />
-    </>
-  );
-};
-
-export default ProductsPage;

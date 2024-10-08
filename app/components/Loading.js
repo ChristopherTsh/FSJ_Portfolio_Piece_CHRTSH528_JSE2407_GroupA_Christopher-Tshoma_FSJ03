@@ -11,7 +11,7 @@
  *
  * @returns {JSX.Element} The Loader component with rotating sections and letters.
  */
-export default function Loader() {
+export default function Loading() {
   // Array to create 45 sections for the animation
   const sections = Array.from({ length: 45 });
 

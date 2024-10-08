@@ -13,7 +13,7 @@
  */
 import { useEffect } from 'react';
 
-export default function Custom404() {
+export default function ErrorMessage() {
   useEffect(() => {
     const colorSwitcher = document.querySelector("[data-theme-color-switch]");
     let currentTheme = "light";

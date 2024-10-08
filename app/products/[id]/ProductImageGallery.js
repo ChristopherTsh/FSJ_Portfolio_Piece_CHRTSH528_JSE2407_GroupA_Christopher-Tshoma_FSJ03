@@ -38,8 +38,12 @@ export default function ProductDetail({ product }) {
   } = product;
 
   const [currentImage, setCurrentImage] = useState(images[0]);
-  const [sortCriteria, setSortCriteria] = useState("date"); // Default sorting by date
+  const [sortCriteria, setSortCriteria] = useState("date");
   const [currentPage, setCurrentPage] = useState(1);
+  const [reviewList, setReviewList] = useState(reviews);
+  const [isEditing, setIsEditing] = useState(null); // Track which review is being edited
+  const [newReview, setNewReview] = useState({ reviewerName: "", comment: "", rating: 0 });
+
   const reviewsPerPage = 5;
 
   /**
@@ -72,12 +76,54 @@ export default function ProductDetail({ product }) {
     : price;
 
   // Pagination logic for reviews
-  const paginatedReviews = sortReviews(reviews, sortCriteria).slice(
+  const paginatedReviews = sortReviews(reviewList, sortCriteria).slice(
     (currentPage - 1) * reviewsPerPage,
     currentPage * reviewsPerPage
   );
 
-  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+  const totalPages = Math.ceil(reviewList.length / reviewsPerPage);
+
+  /**
+   * Handles the deletion of a review.
+   * 
+   * @param {number} index - Index of the review to be deleted
+   */
+  const handleDeleteReview = (index) => {
+    setReviewList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  /**
+   * Handles the submission of a new or edited review.
+   * 
+   * @param {Event} e - The form submission event
+   */
+  const handleSubmitReview = (e) => {
+    e.preventDefault();
+    const newReviewData = { ...newReview, date: new Date().toISOString().split("T")[0] };
+
+    if (isEditing !== null) {
+      // Update an existing review
+      setReviewList((prev) =>
+        prev.map((review, index) => (index === isEditing ? newReviewData : review))
+      );
+      setIsEditing(null);
+    } else {
+      // Add a new review
+      setReviewList((prev) => [...prev, newReviewData]);
+    }
+    setNewReview({ reviewerName: "", comment: "", rating: 0 });
+  };
+
+  /**
+   * Handles the editing of a review.
+   * 
+   * @param {number} index - Index of the review to be edited
+   */
+  const handleEditReview = (index) => {
+    const reviewToEdit = reviewList[index];
+    setNewReview(reviewToEdit);
+    setIsEditing(index);
+  };
 
   return (
     <div className="font-sans bg-white text-black">
@@ -166,42 +212,17 @@ export default function ProductDetail({ product }) {
               ))}
             </p>
 
-            {/* Purchase Buttons */}
-            <div className="flex flex-wrap gap-4 mt-8">
-              <button
-                type="button"
-                className="min-w-[200px] px-4 py-3 bg-yellow-300 hover:bg-yellow-400 text-black text-sm font-semibold rounded"
-              >
-                Buy now
-              </button>
-              <button
-                type="button"
-                className="min-w-[200px] px-4 py-2.5 border border-yellow-300 bg-transparent text-yellow-300 text-sm font-semibold rounded"
-              >
-                Add to cart
-              </button>
-            </div>
-
-            {/* Product Information */}
+            {/* Reviews Section */}
             <div className="mt-8">
-              <h3 className="text-xl font-semibold">About the Product</h3>
-              <p className="mt-2 text-gray-600">{product.description}</p>
-            </div>
+              <h4 className="text-xl font-semibold">Customer Reviews</h4>
 
-            {/* User Reviews */}
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold">User Reviews</h3>
-
-              {/* Sorting Options */}
-              <div className="flex justify-between items-center mt-4">
-                <label htmlFor="sort" className="text-gray-600">
-                  Sort by:
-                </label>
+              {/* Review Sort */}
+              <div className="flex justify-between items-center mt-2">
+                <label className="text-gray-600">Sort by: </label>
                 <select
-                  id="sort"
                   value={sortCriteria}
                   onChange={(e) => setSortCriteria(e.target.value)}
-                  className="border border-gray-300 rounded p-2"
+                  className="border px-2 py-1 rounded"
                 >
                   <option value="date">Most Recent</option>
                   <option value="rating">Highest Rating</option>
@@ -229,6 +250,20 @@ export default function ProductDetail({ product }) {
                     ))}
                   </div>
                   <p className="text-gray-600 mt-2">{review.comment}</p>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <button
+                      className="text-blue-500 text-sm"
+                      onClick={() => handleEditReview((currentPage - 1) * reviewsPerPage + index)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="text-red-500 text-sm"
+                      onClick={() => handleDeleteReview((currentPage - 1) * reviewsPerPage + index)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
 
@@ -248,6 +283,55 @@ export default function ProductDetail({ product }) {
                 >
                   Next
                 </button>
+              </div>
+
+              {/* Add/Edit Review Form */}
+              <div className="mt-6 p-4 border rounded">
+                <h4 className="text-lg font-semibold">{isEditing !== null ? "Edit Review" : "Add a Review"}</h4>
+                <form onSubmit={handleSubmitReview} className="mt-4">
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-1">Name</label>
+                    <input
+                      type="text"
+                      value={newReview.reviewerName}
+                      onChange={(e) => setNewReview({ ...newReview, reviewerName: e.target.value })}
+                      className="w-full px-3 py-2 border rounded"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-1">Rating</label>
+                    <select
+                      value={newReview.rating}
+                      onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value, 10) })}
+                      className="w-full px-3 py-2 border rounded"
+                      required
+                    >
+                      <option value={0}>Select rating</option>
+                      {[...Array(5)].map((_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-1">Comment</label>
+                    <textarea
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                      className="w-full px-3 py-2 border rounded"
+                      rows="4"
+                      required
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  >
+                    {isEditing !== null ? "Update Review" : "Submit Review"}
+                  </button>
+                </form>
               </div>
             </div>
           </div>

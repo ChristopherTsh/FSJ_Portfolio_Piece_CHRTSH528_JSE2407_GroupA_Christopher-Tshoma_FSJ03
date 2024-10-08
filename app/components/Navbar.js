@@ -9,6 +9,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
+    console.log('User not logged in, checking routes...');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);

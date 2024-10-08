@@ -1,5 +1,5 @@
-"use client";
-import { useState } from 'react';
+'use client';
+import { useState, useEffect } from 'react';
 import ProductsClient from './components/ProductsClient';
 import CategoryFilter from './components/CategoryFilter';
 import Searchbar from './components/Searchbar';
@@ -11,6 +11,10 @@ export default function Page() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('asc');
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    console.log('Page state updated:', { category, searchQuery, sortOption, page });
+  }, [category, searchQuery, sortOption, page]);
 
   return (
     <div>

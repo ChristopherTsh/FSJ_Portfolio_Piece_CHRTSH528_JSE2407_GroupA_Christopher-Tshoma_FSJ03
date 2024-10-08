@@ -1,5 +1,5 @@
 // app/api/products.js
-import { db } from '../lib/firebaseConfig';
+import { db } from '../../lib/firebaseConfig';
 import { collection, query, where, orderBy, getDocs, limit, startAfter } from 'firebase/firestore';
 
 export default async function handler(req, res) {

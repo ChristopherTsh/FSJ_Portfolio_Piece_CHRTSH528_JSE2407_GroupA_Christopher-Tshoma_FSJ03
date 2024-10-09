@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { auth } from '../../lib/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { signUp } from '../../lib/auth';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -14,12 +15,13 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
-
+  
+    console.log("Attempting to create user with email:", email);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await signUp(email, password); // Use signUp function from auth.js
       router.push('/'); // Redirect to home after successful signup
     } catch (err) {
-      setError(err.message); // Set error message
+      setError(err.message);
     }
   };
 

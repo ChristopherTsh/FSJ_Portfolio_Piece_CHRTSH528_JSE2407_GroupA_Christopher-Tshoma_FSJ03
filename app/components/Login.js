@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import ErrorMessage from './ErrorMessage';
 import Loading from './Loading';
 import { useRouter } from 'next/navigation';
+import { signIn } from '../../lib/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');

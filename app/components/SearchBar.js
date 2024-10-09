@@ -1,5 +1,4 @@
 // app/components/Searchbar.js
-
 import React from 'react';
 
 export default function Searchbar({ searchQuery, setSearchQuery }) {

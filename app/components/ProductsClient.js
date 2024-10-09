@@ -1,61 +1,74 @@
 // app/products/components/ProductsClient.js
-
-import { useEffect, useState } from 'react';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+'use client';
+import { useState, useEffect } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebaseConfig';
 import ProductGrid from './ProductGrid';
-import Pagination from './Pagination';
+import Loading from './Loading';
+import ErrorMessage from './ErrorMessage';
 
 export default function ProductsClient({ category, searchQuery, sortOption, page, setPage }) {
   const [products, setProducts] = useState([]);
-  const limit = 20;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Fetch products from Firebase
+  // Fetch products from Firebase Firestore
   useEffect(() => {
-    const fetchProductsFromFirebase = async () => {
-      let productsRef = collection(db, 'products');
-      let q = query(productsRef);
-
-      // Apply category filter if not "all"
-      if (category && category !== 'all') {
-        q = query(productsRef, where('category', '==', category));
-      }
-
-      // Apply sorting by price
-      if (sortOption === 'asc') {
-        q = query(q, orderBy('price', 'asc'));
-      } else if (sortOption === 'desc') {
-        q = query(q, orderBy('price', 'desc'));
-      }
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError('');
 
       try {
-        const snapshot = await getDocs(q);
-        let productsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const productsRef = collection(db, 'products');
+        let productsQuery = productsRef;
 
-        // Search functionality
-        if (searchQuery) {
-          productsData = productsData.filter((product) =>
-            product.name && product.name.toLowerCase().includes(searchQuery.toLowerCase())
-          );
+        // Apply category filter if not 'all'
+        if (category !== 'all') {
+          productsQuery = query(productsRef, where('category', '==', category));
         }
 
-        // Pagination
-        const startIdx = (page - 1) * limit;
-        const paginatedProducts = productsData.slice(startIdx, startIdx + limit);
+        const snapshot = await getDocs(productsQuery);
 
-        setProducts(paginatedProducts);
-      } catch (error) {
-        console.error('Error fetching products:', error);
+        if (snapshot.empty) {
+          setError('No products found.');
+          setProducts([]);
+        } else {
+          const productList = snapshot.docs.map((doc) => doc.data());
+
+          // Apply search filter
+          const filteredProducts = productList.filter((product) =>
+            product.title.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+
+          // Sort products
+          const sortedProducts = filteredProducts.sort((a, b) => {
+            if (sortOption === 'asc') {
+              return a.price - b.price;
+            } else {
+              return b.price - a.price;
+            }
+          });
+
+          setProducts(sortedProducts);
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products.');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchProductsFromFirebase();
-  }, [searchQuery, category, sortOption, page]);
+    fetchProducts();
+  }, [category, searchQuery, sortOption]);
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorMessage message={error} />;
 
   return (
     <div>
       <ProductGrid products={products} />
-      <Pagination page={page} setPage={setPage} />
+      {/* Pagination logic could be added here if needed */}
     </div>
   );
 }

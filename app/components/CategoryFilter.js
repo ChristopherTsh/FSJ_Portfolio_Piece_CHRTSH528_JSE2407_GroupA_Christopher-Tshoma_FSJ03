@@ -1,5 +1,4 @@
 // app/components/CategoryFilter.js
-
 import React from 'react';
 
 export default function CategoryFilter({ selectedCategory, setSelectedCategory, categories = [] }) {

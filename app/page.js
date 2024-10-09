@@ -38,8 +38,9 @@ export default function Page() {
         setLoading(true);
         const categoriesRef = collection(db, 'categories');
         const snapshot = await getDocs(categoriesRef);
-        const categoryList = snapshot.docs.map((doc) => String(doc.data().name));
-        setCategories(['all', ...categoryList]);
+        // Access the array of categories directly from the document
+        const categoryData = snapshot.docs.map((doc) => doc.data().categories)[0];
+        setCategories(['all', ...categoryData]);  // Include "all" in the categories list
         setLoading(false);
       } catch (error) {
         console.error('Error fetching categories:', error);

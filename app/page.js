@@ -11,6 +11,11 @@ import SortOptions from './components/SortOptions';
 import ErrorMessage from './components/ErrorMessage';
 import Loading from './components/Loading';
 
+/**
+ * Page component for displaying products with filtering, searching, and sorting functionalities.
+ *
+ * @returns {JSX.Element} The rendered Page component.
+ */
 export default function Page() {
   const [category, setCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +29,11 @@ export default function Page() {
     console.log('Page state updated:', { category, searchQuery, sortOption, page });
   }, [category, searchQuery, sortOption, page]);
 
+  /**
+   * Resets the filter options to their default values.
+   * Resets category to 'all', search query to an empty string,
+   * sort option to 'asc', and page to 1.
+   */
   const resetFilters = () => {
     setCategory('all');
     setSearchQuery('');

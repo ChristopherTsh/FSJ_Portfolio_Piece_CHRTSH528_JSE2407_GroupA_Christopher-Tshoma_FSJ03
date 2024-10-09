@@ -1,30 +1,20 @@
-//App/componets/pagination
-export default function Pagination({ page, setPage }) {
-  const handlePrevious = () => {
-      if (page > 1) {
-          setPage(page - 1);
-      }
-  };
+'use client';
 
-  const handleNext = () => {
-      setPage(page + 1);
-  };
+export default function Pagination({ currentPage, totalProducts, onPageChange }) {
+  const PAGE_SIZE = 20; // This should match the page size used in your API
+  const totalPages = Math.ceil(totalProducts / PAGE_SIZE);
 
   return (
-      <div className="flex justify-between mt-4">
-          <button
-              onClick={handlePrevious}
-              disabled={page === 1}
-              className="bg-gray-300 text-gray-700 p-2 rounded disabled:opacity-50"
-          >
-              Previous
-          </button>
-          <button
-              onClick={handleNext}
-              className="bg-gray-300 text-gray-700 p-2 rounded"
-          >
-              Next
-          </button>
-      </div>
+    <div className="flex justify-center mt-4">
+      {Array.from({ length: totalPages }, (_, index) => (
+        <button
+          key={index}
+          onClick={() => onPageChange(index + 1)}
+          className={`mx-2 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        >
+          {index + 1}
+        </button>
+      ))}
+    </div>
   );
 }

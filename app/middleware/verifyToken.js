@@ -1,23 +1,21 @@
-import { getAuth } from 'firebase-admin/auth';
-import { initializeApp, applicationDefault } from 'firebase-admin/app';
+// app/middleware/verifyToken.js
+import { auth } from '../../lib/firebaseConfig';
 
-initializeApp({
-  credential: applicationDefault(),
-});
-
-export async function verifyToken(req, res, next) {
+export const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split('Bearer ')[1];
+
   try {
-    const decodedToken = await getAuth().verifyIdToken(token);
-    req.user = decodedToken;
-    next();
+    const user = await auth.verifyIdToken(token); // Replace this with your own Firebase Auth verification logic
+    req.user = { email: user.email, name: user.name }; // Attach user info to the request
+    return next();
   } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
+    console.error('Token verification failed:', error);
+    return res.status(403).json({ error: 'Forbidden' });
   }
-}
+};

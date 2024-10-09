@@ -1,28 +1,7 @@
 "use client"; // Enable client-side rendering
 import { useState } from "react";
+import { deleteReview, addReview } from "../../utils/reviewApi.js"; // Separate functions for API calls
 
-/**
- * Component to display product details including images, pricing, rating, and reviews.
- * 
- * @component
- * @param {Object} props - Component properties
- * @param {Object} props.product - The product object containing all details
- * @param {string[]} props.product.images - Array of image URLs for the product
- * @param {string} props.product.thumbnail - URL for the thumbnail image
- * @param {string} props.product.title - Product title
- * @param {number} props.product.price - Product price
- * @param {number} [props.product.discountPercentage] - Discount percentage (optional)
- * @param {number} props.product.rating - Product rating out of 5
- * @param {string} props.product.category - Product category
- * @param {number} props.product.stock - Number of items in stock
- * @param {string[]} props.product.tags - Array of tags related to the product
- * @param {Object[]} props.product.reviews - Array of reviews for the product
- * @param {string} props.product.reviews[].reviewerName - Name of the reviewer
- * @param {string} props.product.reviews[].comment - Reviewer's comment
- * @param {number} props.product.reviews[].rating - Rating given by the reviewer out of 5
- * @param {string} props.product.reviews[].date - Date of the review
- * @returns {JSX.Element} ProductDetail component
- */
 export default function ProductDetail({ product }) {
   const {
     images,
@@ -41,27 +20,14 @@ export default function ProductDetail({ product }) {
   const [sortCriteria, setSortCriteria] = useState("date");
   const [currentPage, setCurrentPage] = useState(1);
   const [reviewList, setReviewList] = useState(reviews);
-  const [isEditing, setIsEditing] = useState(null); // Track which review is being edited
+  const [isEditing, setIsEditing] = useState(null);
   const [newReview, setNewReview] = useState({ reviewerName: "", comment: "", rating: 0 });
-
   const reviewsPerPage = 5;
 
-  /**
-   * Handles image load error by falling back to the thumbnail image.
-   * 
-   * @param {Object} e - The event object for the image load error
-   */
   const handleError = (e) => {
-    e.target.src = thumbnail; // Fallback image if loading fails
+    e.target.src = thumbnail;
   };
 
-  /**
-   * Sorts the reviews based on the selected criteria.
-   * 
-   * @param {Object[]} reviews - The array of reviews to sort
-   * @param {string} criteria - The criteria to sort by ('date' or 'rating')
-   * @returns {Object[]} - The sorted reviews array
-   */
   const sortReviews = (reviews, criteria) => {
     if (criteria === "rating") {
       return [...reviews].sort((a, b) => b.rating - a.rating);
@@ -70,12 +36,10 @@ export default function ProductDetail({ product }) {
     }
   };
 
-  // Calculate the discounted price if a discount is available
   const discountedPrice = discountPercentage
     ? (price - (price * discountPercentage) / 100).toFixed(2)
     : price;
 
-  // Pagination logic for reviews
   const paginatedReviews = sortReviews(reviewList, sortCriteria).slice(
     (currentPage - 1) * reviewsPerPage,
     currentPage * reviewsPerPage
@@ -83,42 +47,37 @@ export default function ProductDetail({ product }) {
 
   const totalPages = Math.ceil(reviewList.length / reviewsPerPage);
 
-  /**
-   * Handles the deletion of a review.
-   * 
-   * @param {number} index - Index of the review to be deleted
-   */
-  const handleDeleteReview = (index) => {
-    setReviewList((prev) => prev.filter((_, i) => i !== index));
+  const handleDeleteReview = async (index) => {
+    const reviewToDelete = reviewList[index];
+    const response = await deleteReview(product.id, reviewToDelete.id); 
+    if (response.success) {
+      setReviewList((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      alert("Error deleting review. Please try again.");
+    }
   };
 
-  /**
-   * Handles the submission of a new or edited review.
-   * 
-   * @param {Event} e - The form submission event
-   */
-  const handleSubmitReview = (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
     const newReviewData = { ...newReview, date: new Date().toISOString().split("T")[0] };
 
     if (isEditing !== null) {
-      // Update an existing review
-      setReviewList((prev) =>
-        prev.map((review, index) => (index === isEditing ? newReviewData : review))
+      const updatedReviews = reviewList.map((review, index) =>
+        index === isEditing ? newReviewData : review
       );
+      setReviewList(updatedReviews);
       setIsEditing(null);
     } else {
-      // Add a new review
-      setReviewList((prev) => [...prev, newReviewData]);
+      const response = await addReview(product.id, newReviewData);
+      if (response.success) {
+        setReviewList((prev) => [...prev, newReviewData]);
+      } else {
+        alert("Error adding review. Please try again.");
+      }
     }
     setNewReview({ reviewerName: "", comment: "", rating: 0 });
   };
 
-  /**
-   * Handles the editing of a review.
-   * 
-   * @param {number} index - Index of the review to be edited
-   */
   const handleEditReview = (index) => {
     const reviewToEdit = reviewList[index];
     setNewReview(reviewToEdit);
@@ -128,10 +87,9 @@ export default function ProductDetail({ product }) {
   return (
     <div className="font-sans bg-white text-black">
       <div className="p-4 lg:max-w-7xl max-w-2xl max-lg:mx-auto">
+        {/* Image Gallery */}
         <div className="grid items-start grid-cols-1 lg:grid-cols-5 gap-12">
-          {/* Image Gallery Section */}
           <div className="lg:col-span-3 w-full lg:sticky top-0 text-center">
-            {/* Main Product Image */}
             <div className="bg-gray-200 px-4 py-12 rounded-xl">
               <img
                 src={currentImage}
@@ -140,8 +98,6 @@ export default function ProductDetail({ product }) {
                 className="w-9/12 rounded object-cover mx-auto"
               />
             </div>
-
-            {/* Thumbnails */}
             {images.length > 1 && (
               <div className="mt-4 flex flex-wrap justify-center gap-4 mx-auto">
                 {images.map((img, index) => (
@@ -162,11 +118,8 @@ export default function ProductDetail({ product }) {
             )}
           </div>
 
-          {/* Product Details Section */}
           <div className="lg:col-span-2">
             <h2 className="text-3xl font-semibold">{title}</h2>
-
-            {/* Rating Section */}
             <div className="flex items-center mt-4">
               {[...Array(5)].map((_, i) => (
                 <svg
@@ -181,8 +134,6 @@ export default function ProductDetail({ product }) {
               ))}
               <h4 className="text-black text-base ml-2">{rating.toFixed(2)} / 5</h4>
             </div>
-
-            {/* Pricing Section */}
             <div className="flex flex-wrap gap-4 mt-6">
               <p className="text-4xl font-semibold">${discountedPrice}</p>
               {discountPercentage && (
@@ -193,13 +144,9 @@ export default function ProductDetail({ product }) {
               )}
             </div>
             <p className="text-gray-400 text-base mt-2">Tax included</p>
-
-            {/* Stock & Availability */}
             <p className={`mt-4 ${stock > 0 ? "text-green-400" : "text-red-400"}`}>
               {stock > 0 ? `In stock (${stock} available)` : "Out of stock"}
             </p>
-
-            {/* Category & Tags */}
             <p className="mt-4">
               Category: <span className="text-gray-400">{category}</span>
             </p>
@@ -212,11 +159,8 @@ export default function ProductDetail({ product }) {
               ))}
             </p>
 
-            {/* Reviews Section */}
             <div className="mt-8">
               <h4 className="text-xl font-semibold">Customer Reviews</h4>
-
-              {/* Review Sort */}
               <div className="flex justify-between items-center mt-2">
                 <label className="text-gray-600">Sort by: </label>
                 <select
@@ -229,7 +173,6 @@ export default function ProductDetail({ product }) {
                 </select>
               </div>
 
-              {/* Review List */}
               {paginatedReviews.map((review, index) => (
                 <div key={index} className="mt-4 p-4 border border-gray-200 rounded">
                   <div className="flex justify-between">
@@ -250,16 +193,16 @@ export default function ProductDetail({ product }) {
                     ))}
                   </div>
                   <p className="text-gray-600 mt-2">{review.comment}</p>
-                  <div className="flex justify-end gap-2 mt-2">
+                  <div className="flex justify-end gap-2 mt-4">
                     <button
-                      className="text-blue-500 text-sm"
-                      onClick={() => handleEditReview((currentPage - 1) * reviewsPerPage + index)}
+                      onClick={() => handleEditReview(index)}
+                      className="text-blue-500 hover:underline"
                     >
                       Edit
                     </button>
                     <button
-                      className="text-red-500 text-sm"
-                      onClick={() => handleDeleteReview((currentPage - 1) * reviewsPerPage + index)}
+                      onClick={() => handleDeleteReview(index)}
+                      className="text-red-500 hover:underline"
                     >
                       Delete
                     </button>
@@ -267,72 +210,81 @@ export default function ProductDetail({ product }) {
                 </div>
               ))}
 
-              {/* Pagination Controls */}
-              <div className="flex justify-center gap-4 mt-6">
+              <div className="flex justify-between items-center mt-4">
                 <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((prev) => prev - 1)}
-                  className="px-4 py-2 border rounded disabled:opacity-50"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className="bg-gray-200 px-4 py-2 rounded"
                 >
                   Previous
                 </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
                 <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((prev) => prev + 1)}
-                  className="px-4 py-2 border rounded disabled:opacity-50"
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  className="bg-gray-200 px-4 py-2 rounded"
                 >
                   Next
                 </button>
               </div>
 
-              {/* Add/Edit Review Form */}
-              <div className="mt-6 p-4 border rounded">
-                <h4 className="text-lg font-semibold">{isEditing !== null ? "Edit Review" : "Add a Review"}</h4>
-                <form onSubmit={handleSubmitReview} className="mt-4">
-                  <div className="mb-4">
-                    <label className="block text-gray-700 mb-1">Name</label>
-                    <input
-                      type="text"
-                      value={newReview.reviewerName}
-                      onChange={(e) => setNewReview({ ...newReview, reviewerName: e.target.value })}
-                      className="w-full px-3 py-2 border rounded"
-                      required
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 mb-1">Rating</label>
-                    <select
-                      value={newReview.rating}
-                      onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value, 10) })}
-                      className="w-full px-3 py-2 border rounded"
-                      required
-                    >
-                      <option value={0}>Select rating</option>
-                      {[...Array(5)].map((_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {i + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 mb-1">Comment</label>
-                    <textarea
-                      value={newReview.comment}
-                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                      className="w-full px-3 py-2 border rounded"
-                      rows="4"
-                      required
-                    ></textarea>
-                  </div>
+              <form onSubmit={handleSubmitReview} className="mt-8 border-t pt-4">
+                <h4 className="text-xl font-semibold">
+                  {isEditing !== null ? "Edit Review" : "Add a Review"}
+                </h4>
+                <div className="mt-4">
+                  <label className="block font-medium">Name</label>
+                  <input
+                    type="text"
+                    value={newReview.reviewerName}
+                    onChange={(e) =>
+                      setNewReview((prev) => ({ ...prev, reviewerName: e.target.value }))
+                    }
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div className="mt-4">
+                  <label className="block font-medium">Rating</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={newReview.rating}
+                    onChange={(e) =>
+                      setNewReview((prev) => ({ ...prev, rating: Number(e.target.value) }))
+                    }
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div className="mt-4">
+                  <label className="block font-medium">Comment</label>
+                  <textarea
+                    value={newReview.comment}
+                    onChange={(e) =>
+                      setNewReview((prev) => ({ ...prev, comment: e.target.value }))
+                    }
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div className="mt-4 flex justify-end">
                   <button
-                    type="submit"
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    type="button"
+                    onClick={() => {
+                      setIsEditing(null);
+                      setNewReview({ reviewerName: "", comment: "", rating: 0 });
+                    }}
+                    className="bg-gray-200 px-4 py-2 rounded mr-2"
                   >
+                    Cancel
+                  </button>
+                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
                     {isEditing !== null ? "Update Review" : "Submit Review"}
                   </button>
-                </form>
-              </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>

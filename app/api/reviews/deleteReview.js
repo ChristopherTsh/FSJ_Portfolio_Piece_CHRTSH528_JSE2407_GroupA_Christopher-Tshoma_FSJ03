@@ -1,3 +1,4 @@
+// app/api/reviews/deleteReview.js
 import { db } from '../../../lib/firebaseConfig';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { verifyToken } from '../../middleware/verifyToken';

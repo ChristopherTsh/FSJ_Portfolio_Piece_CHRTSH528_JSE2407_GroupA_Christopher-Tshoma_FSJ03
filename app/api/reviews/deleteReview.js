@@ -1,24 +1,23 @@
-// app/api/reviews/deleteReview.js
-import { db } from '../../../lib/firebaseConfig';
-import { doc, deleteDoc } from 'firebase/firestore';
-import { verifyToken } from '../../middleware/verifyToken';
+import { verifyToken } from '../../../lib/verifyToken';
 
 export default async function handler(req, res) {
-  await verifyToken(req, res, async () => {
-    if (req.method !== 'DELETE') {
-      return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'DELETE') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    await verifyToken(req, res);
+
+    const { reviewId } = req.body;
+
+    if (!reviewId) {
+      return res.status(400).json({ message: 'Review ID is required' });
     }
 
-    const { productId, reviewId } = req.body;
-
-    try {
-      const reviewDocRef = doc(db, 'products', productId, 'reviews', reviewId);
-      await deleteDoc(reviewDocRef);
-
-      res.status(200).json({ message: 'Review deleted successfully' });
-    } catch (error) {
-      console.error('Error deleting review:', error);
-      res.status(500).json({ error: 'Error deleting review' });
-    }
-  });
+    // Mock: Remove the review from local storage (replace this with actual logic)
+    res.status(200).json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 }

@@ -1,31 +1,34 @@
-// app/api/reviews/addReview.js
-import { db } from '../../../lib/firebaseConfig';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { verifyToken } from '../../middleware/verifyToken';
+import { verifyToken } from '../../../lib/verifyToken';
 
 export default async function handler(req, res) {
-  await verifyToken(req, res, async () => {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    await verifyToken(req, res);
+
+    const { productId, rating, comment, email, name } = req.body;
+
+    if (!productId || !rating || !comment || !email || !name) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
-    const { productId, rating, comment } = req.body;
-    const { email, name } = req.user;
+    // Mock saving the review locally (in-memory storage)
+    const review = {
+      id: Date.now().toString(),
+      productId,
+      rating,
+      comment,
+      email,
+      name,
+      date: new Date().toISOString(),
+    };
 
-    try {
-      const reviewRef = collection(db, 'products', productId, 'reviews');
-      await addDoc(reviewRef, {
-        rating,
-        comment,
-        email,
-        name,
-        date: Timestamp.now(),
-      });
-
-      res.status(200).json({ message: 'Review added successfully' });
-    } catch (error) {
-      console.error('Error adding review:', error);
-      res.status(500).json({ error: 'Error adding review' });
-    }
-  });
+    // Respond with success
+    res.status(200).json({ message: 'Review added successfully', review });
+  } catch (error) {
+    console.error('Error adding review:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 }

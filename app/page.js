@@ -8,7 +8,7 @@ import ErrorMessage from './components/ErrorMessage';
 import Loading from './components/Loading';
 
 export default function Page() {
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('asc');
   const [page, setPage] = useState(1);
@@ -20,7 +20,7 @@ export default function Page() {
   }, [category, searchQuery, sortOption, page]);
 
   const resetFilters = () => {
-    setCategory('');
+    setCategory('all');
     setSearchQuery('');
     setSortOption('asc');
   };
@@ -41,7 +41,14 @@ export default function Page() {
           Reset
         </button>
       </div>
-      <ProductsClient category={category} searchQuery={searchQuery} sortOption={sortOption} page={page} />
+      {/* Pass the filters as props */}
+      <ProductsClient
+        category={category}
+        searchQuery={searchQuery}
+        sortOption={sortOption}
+        page={page}
+        setPage={setPage}
+      />
     </div>
   );
 }

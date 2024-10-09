@@ -5,17 +5,10 @@ import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebaseConfig'; // Import Firebase Firestore
 import ProductGrid from './ProductGrid';
 import Pagination from './Pagination';
-import Searchbar from './Searchbar';
-import SortOptions from './SortOptions';
-import CategoryFilter from './CategoryFilter';
 
-export default function ProductsClient() {
+export default function ProductsClient({ category, searchQuery, sortOption, page, setPage }) {
     const [products, setProducts] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [sortOption, setSortOption] = useState('');
-    const [page, setPage] = useState(1);
-    const [categories, setCategories] = useState(['all']); // Add "all" category
+    const [categories, setCategories] = useState(['all']);
     const limit = 20;
 
     // Fetch categories from Firebase
@@ -42,9 +35,9 @@ export default function ProductsClient() {
             let q = query(productsRef);
 
             // Apply category filter if not "all"
-            if (selectedCategory && selectedCategory !== 'all') {
-                console.log('Applying category filter:', selectedCategory);
-                q = query(q, where('category', '==', selectedCategory));
+            if (category && category !== 'all') {
+                console.log('Applying category filter:', category);
+                q = query(q, where('category', '==', category));
             }
 
             // Apply sorting by price
@@ -81,17 +74,10 @@ export default function ProductsClient() {
         }
 
         fetchProductsFromFirebase();
-    }, [searchQuery, selectedCategory, sortOption, page]);
+    }, [searchQuery, category, sortOption, page]);
 
     return (
         <div>
-            <Searchbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-            <CategoryFilter
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-                categories={categories} // Pass categories to CategoryFilter
-            />
-            <SortOptions sortOption={sortOption} setSortOption={setSortOption} />
             <ProductGrid products={products} />
             <Pagination page={page} setPage={setPage} />
         </div>

@@ -134,6 +134,9 @@ function ProductImageGallery({ images, fallbackImage }) {
 
   let isThrottled = false;
 
+  /**
+   * Displays the previous image in the gallery.
+   */
   const showPreviousImage = () => {
     if (!isThrottled) {
       setCurrentImageIndex((prevIndex) =>
@@ -143,6 +146,9 @@ function ProductImageGallery({ images, fallbackImage }) {
     }
   };
 
+  /**
+   * Displays the next image in the gallery.
+   */
   const showNextImage = () => {
     if (!isThrottled) {
       setCurrentImageIndex((prevIndex) =>
@@ -152,11 +158,19 @@ function ProductImageGallery({ images, fallbackImage }) {
     }
   };
 
+  /**
+   * Prevents multiple clicks within a short time frame.
+   */
   const throttleClick = () => {
     isThrottled = true;
     setTimeout(() => (isThrottled = false), 500); // Prevent clicking for 500ms
   };
 
+  /**
+   * Handles the error when an image fails to load by replacing it with a fallback image.
+   *
+   * @param {Object} e - The error event
+   */
   const handleError = (e) => {
     e.target.src = fallbackImage;
   };

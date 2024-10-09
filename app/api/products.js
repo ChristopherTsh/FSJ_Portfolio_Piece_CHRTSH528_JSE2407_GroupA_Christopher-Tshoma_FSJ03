@@ -1,8 +1,24 @@
 // app/api/products.js
 
-import { collection, query, where, orderBy, getDocs, limit, startAfter } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, limit } from 'firebase/firestore';
 import { db } from '../../lib/firebaseConfig';
 
+/**
+ * API handler for fetching products from Firestore.
+ *
+ * This function handles GET requests to retrieve a list of products based 
+ * on the specified filters: category, search query, sorting option, and 
+ * pagination. The function constructs a Firestore query and returns the 
+ * filtered product data as a JSON response.
+ *
+ * @async
+ * @function handler
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} A Promise that resolves when the response is sent.
+ * 
+ * @throws {Error} Throws an error if the request fails to fetch products.
+ */
 export default async function handler(req, res) {
   const { category = 'all', searchQuery = '', sortOption = 'asc', page = 1 } = req.query;
   const itemsPerPage = 20;

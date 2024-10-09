@@ -1,3 +1,5 @@
+// app/components/Navbar.js
+
 'use client'; // Enable client-side rendering
 
 import { useEffect, useState } from 'react';
@@ -5,6 +7,15 @@ import Link from 'next/link';
 import { auth } from '../../lib/firebaseConfig'; // Adjust the path if necessary
 import { onAuthStateChanged } from 'firebase/auth';
 
+/**
+ * Navbar component for the e-commerce application.
+ *
+ * This component renders a navigation bar with links to the home page,
+ * products page, and login/sign-up options. It also displays the current
+ * user's name if logged in and provides a logout button.
+ *
+ * @returns {JSX.Element} The rendered navigation bar.
+ */
 const Navbar = () => {
   const [user, setUser] = useState(null);
 

@@ -1,5 +1,14 @@
 'use client'; // Enable client-side rendering
-//App/componets/SortOptions.js
+
+/**
+ * SortOptions component to select sorting options.
+ * 
+ * @component
+ * @param {Object} props - Component properties.
+ * @param {string} props.sortOption - The current sort option.
+ * @param {Function} props.setSortOption - Function to update the sort option.
+ * @returns {JSX.Element} The rendered SortOptions component.
+ */
 export default function SortOptions({ sortOption, setSortOption }) {
   return (
     <select

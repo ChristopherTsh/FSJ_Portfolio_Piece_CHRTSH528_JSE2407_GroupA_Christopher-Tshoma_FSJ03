@@ -2,6 +2,24 @@
 import { useState } from "react";
 import { deleteReview, addReview } from "../../utils/reviewApi.js"; // Separate functions for API calls
 
+/**
+ * ProductDetail component displays the details of a specific product, 
+ * including images, price, stock information, and customer reviews.
+ *
+ * @param {Object} product - The product object containing details about the product.
+ * @param {Array} product.images - Array of image URLs for the product.
+ * @param {string} product.thumbnail - URL of the product's thumbnail image.
+ * @param {string} product.title - The title of the product.
+ * @param {number} product.price - The price of the product.
+ * @param {number} [product.discountPercentage] - The discount percentage on the product.
+ * @param {number} product.rating - The average rating of the product.
+ * @param {string} product.category - The category the product belongs to.
+ * @param {number} product.stock - The number of items available in stock.
+ * @param {Array} product.tags - Array of tags associated with the product.
+ * @param {Array} product.reviews - Array of reviews for the product.
+ *
+ * @returns {JSX.Element} The rendered ProductDetail component.
+ */
 export default function ProductDetail({ product }) {
   const {
     images,
@@ -24,10 +42,22 @@ export default function ProductDetail({ product }) {
   const [newReview, setNewReview] = useState({ reviewerName: "", comment: "", rating: 0 });
   const reviewsPerPage = 5;
 
+  /**
+   * Handles errors when loading images by setting the src to the thumbnail image.
+   *
+   * @param {Event} e - The error event.
+   */
   const handleError = (e) => {
     e.target.src = thumbnail;
   };
 
+  /**
+   * Sorts reviews based on the specified criteria.
+   *
+   * @param {Array} reviews - The array of reviews to be sorted.
+   * @param {string} criteria - The criteria to sort by ('rating' or 'date').
+   * @returns {Array} The sorted array of reviews.
+   */
   const sortReviews = (reviews, criteria) => {
     if (criteria === "rating") {
       return [...reviews].sort((a, b) => b.rating - a.rating);
@@ -47,6 +77,11 @@ export default function ProductDetail({ product }) {
 
   const totalPages = Math.ceil(reviewList.length / reviewsPerPage);
 
+  /**
+   * Handles the deletion of a review.
+   *
+   * @param {number} index - The index of the review to delete.
+   */
   const handleDeleteReview = async (index) => {
     const reviewToDelete = reviewList[index];
     const response = await deleteReview(product.id, reviewToDelete.id); 
@@ -57,6 +92,11 @@ export default function ProductDetail({ product }) {
     }
   };
 
+  /**
+   * Handles the submission of a new or edited review.
+   *
+   * @param {Event} e - The form submission event.
+   */
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     const newReviewData = { ...newReview, date: new Date().toISOString().split("T")[0] };
@@ -78,6 +118,11 @@ export default function ProductDetail({ product }) {
     setNewReview({ reviewerName: "", comment: "", rating: 0 });
   };
 
+  /**
+   * Handles the editing of a review.
+   *
+   * @param {number} index - The index of the review to edit.
+   */
   const handleEditReview = (index) => {
     const reviewToEdit = reviewList[index];
     setNewReview(reviewToEdit);
@@ -166,126 +211,99 @@ export default function ProductDetail({ product }) {
                 <select
                   value={sortCriteria}
                   onChange={(e) => setSortCriteria(e.target.value)}
-                  className="border px-2 py-1 rounded"
+                  className="border border-gray-300 rounded-md p-2"
                 >
-                  <option value="date">Most Recent</option>
-                  <option value="rating">Highest Rating</option>
+                  <option value="date">Date</option>
+                  <option value="rating">Rating</option>
                 </select>
               </div>
-
-              {paginatedReviews.map((review, index) => (
-                <div key={index} className="mt-4 p-4 border border-gray-200 rounded">
-                  <div className="flex justify-between">
-                    <p className="font-semibold">{review.reviewerName}</p>
-                    <p className="text-sm text-gray-500">{review.date}</p>
-                  </div>
-                  <div className="flex items-center mt-2">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-[14px] ${i < review.rating ? "fill-yellow-300" : "fill-[#CED5D8]"}`}
-                        viewBox="0 0 14 13"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+              <div className="mt-4">
+                {paginatedReviews.length === 0 ? (
+                  <p className="text-gray-500">No reviews yet.</p>
+                ) : (
+                  paginatedReviews.map((review, index) => (
+                    <div key={index} className="border-b border-gray-300 py-4">
+                      <div className="flex justify-between">
+                        <div>
+                          <strong>{review.reviewerName}</strong>
+                          <p className="text-gray-400">{review.date}</p>
+                        </div>
+                        <div>
+                          <button onClick={() => handleEditReview(index)} className="text-blue-500">Edit</button>
+                          <button onClick={() => handleDeleteReview(index)} className="text-red-500 ml-2">Delete</button>
+                        </div>
+                      </div>
+                      <div className="flex items-center mt-2">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-[14px] ${i < review.rating ? "fill-yellow-300" : "fill-[#CED5D8]"}`}
+                            viewBox="0 0 14 13"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M7 0L9.4687 3.60213L13.6574 4.83688L10.9944 8.29787L11.1145 12.6631L7 11.2L2.8855 12.6631L3.00556 8.29787L0.342604 4.83688L4.5313 3.60213L7 0Z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <p className="mt-2">{review.comment}</p>
+                    </div>
+                  ))
+                )}
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-4">
+                    {Array.from({ length: totalPages }).map((_, index) => (
+                      <button
+                        key={index}
+                        className={`mx-1 px-2 py-1 border rounded ${currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-white"}`}
+                        onClick={() => setCurrentPage(index + 1)}
                       >
-                        <path d="M7 0L9.4687 3.60213L13.6574 4.83688L10.9944 8.29787L11.1145 12.6631L7 11.2L2.8855 12.6631L3.00556 8.29787L0.342604 4.83688L4.5313 3.60213L7 0Z" />
-                      </svg>
+                        {index + 1}
+                      </button>
                     ))}
                   </div>
-                  <p className="text-gray-600 mt-2">{review.comment}</p>
-                  <div className="flex justify-end gap-2 mt-4">
-                    <button
-                      onClick={() => handleEditReview(index)}
-                      className="text-blue-500 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteReview(index)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )}
+              </div>
+            </div>
 
-              <div className="flex justify-between items-center mt-4">
+            <form onSubmit={handleSubmitReview} className="mt-8">
+              <h4 className="text-xl font-semibold">Leave a Review</h4>
+              <div className="mt-4">
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={newReview.reviewerName}
+                  onChange={(e) => setNewReview({ ...newReview, reviewerName: e.target.value })}
+                  required
+                  className="border border-gray-300 rounded-md p-2 w-full"
+                />
+              </div>
+              <div className="flex mt-4">
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  placeholder="Rating (1-5)"
+                  value={newReview.rating}
+                  onChange={(e) => setNewReview({ ...newReview, rating: e.target.value })}
+                  required
+                  className="border border-gray-300 rounded-md p-2 w-1/4"
+                />
+                <textarea
+                  placeholder="Your review"
+                  value={newReview.comment}
+                  onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                  required
+                  className="border border-gray-300 rounded-md p-2 w-full ml-4"
+                />
                 <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="bg-gray-200 px-4 py-2 rounded"
+                  type="submit"
+                  className="bg-blue-500 text-white rounded-md px-4 py-2 ml-2"
                 >
-                  Previous
-                </button>
-                <span>
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className="bg-gray-200 px-4 py-2 rounded"
-                >
-                  Next
+                  {isEditing !== null ? "Update Review" : "Submit Review"}
                 </button>
               </div>
-
-              <form onSubmit={handleSubmitReview} className="mt-8 border-t pt-4">
-                <h4 className="text-xl font-semibold">
-                  {isEditing !== null ? "Edit Review" : "Add a Review"}
-                </h4>
-                <div className="mt-4">
-                  <label className="block font-medium">Name</label>
-                  <input
-                    type="text"
-                    value={newReview.reviewerName}
-                    onChange={(e) =>
-                      setNewReview((prev) => ({ ...prev, reviewerName: e.target.value }))
-                    }
-                    className="w-full border p-2 rounded"
-                    required
-                  />
-                </div>
-                <div className="mt-4">
-                  <label className="block font-medium">Rating</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={newReview.rating}
-                    onChange={(e) =>
-                      setNewReview((prev) => ({ ...prev, rating: Number(e.target.value) }))
-                    }
-                    className="w-full border p-2 rounded"
-                    required
-                  />
-                </div>
-                <div className="mt-4">
-                  <label className="block font-medium">Comment</label>
-                  <textarea
-                    value={newReview.comment}
-                    onChange={(e) =>
-                      setNewReview((prev) => ({ ...prev, comment: e.target.value }))
-                    }
-                    className="w-full border p-2 rounded"
-                    required
-                  />
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditing(null);
-                      setNewReview({ reviewerName: "", comment: "", rating: 0 });
-                    }}
-                    className="bg-gray-200 px-4 py-2 rounded mr-2"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-                    {isEditing !== null ? "Update Review" : "Submit Review"}
-                  </button>
-                </div>
-              </form>
-            </div>
+            </form>
           </div>
         </div>
       </div>

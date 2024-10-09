@@ -6,16 +6,26 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { signUp } from '../../lib/auth';
 
+/**
+ * Signup component for user registration.
+ *
+ * @returns {JSX.Element} The Signup component
+ */
 const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
+  /**
+   * Handles the signup form submission.
+   *
+   * @param {React.FormEvent<HTMLFormElement>} e - The form submit event
+   */
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
-  
+
     console.log("Attempting to create user with email:", email);
     try {
       await signUp(email, password); // Use signUp function from auth.js

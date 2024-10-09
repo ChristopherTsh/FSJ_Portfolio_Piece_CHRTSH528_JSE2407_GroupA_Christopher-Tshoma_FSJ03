@@ -1,5 +1,5 @@
-// app/products/components/ProductsClient.js
 'use client';
+
 import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebaseConfig';
@@ -7,6 +7,17 @@ import ProductGrid from './ProductGrid';
 import Loading from './Loading';
 import ErrorMessage from './ErrorMessage';
 
+/**
+ * ProductsClient component fetches and displays products from Firebase Firestore.
+ *
+ * @param {Object} props - The component props
+ * @param {string} props.category - The selected product category for filtering
+ * @param {string} props.searchQuery - The search query for filtering products
+ * @param {string} props.sortOption - The selected sorting option ('asc' or 'desc')
+ * @param {number} props.page - The current page number for pagination (not implemented)
+ * @param {function} props.setPage - The function to set the current page number (not implemented)
+ * @returns {JSX.Element} The ProductsClient component
+ */
 export default function ProductsClient({ category, searchQuery, sortOption, page, setPage }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);

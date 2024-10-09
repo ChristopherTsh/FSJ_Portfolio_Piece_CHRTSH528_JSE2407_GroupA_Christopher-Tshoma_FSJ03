@@ -1,5 +1,9 @@
+// app/products/page.js
+
 'use client';
 import { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebaseConfig';
 import ProductsClient from './components/ProductsClient';
 import CategoryFilter from './components/CategoryFilter';
 import Searchbar from './components/Searchbar';
@@ -12,6 +16,7 @@ export default function Page() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('asc');
   const [page, setPage] = useState(1);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,7 +28,28 @@ export default function Page() {
     setCategory('all');
     setSearchQuery('');
     setSortOption('asc');
+    setPage(1); // Reset page to 1 when filters are reset
   };
+
+  // Fetch categories from Firebase
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const categoriesRef = collection(db, 'categories');
+        const snapshot = await getDocs(categoriesRef);
+        const categoryList = snapshot.docs.map((doc) => String(doc.data().name));
+        setCategories(['all', ...categoryList]);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setError('Failed to fetch categories.');
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   if (loading) return <Loading />;
 
@@ -31,7 +57,7 @@ export default function Page() {
     <div className="max-w-7xl mx-auto p-4">
       {error && <ErrorMessage message={error} />}
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8 p-4">
-        <CategoryFilter selectedCategory={category} setSelectedCategory={setCategory} />
+        <CategoryFilter selectedCategory={category} setSelectedCategory={setCategory} categories={categories} />
         <Searchbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <SortOptions sortOption={sortOption} setSortOption={setSortOption} />
         <button
@@ -41,13 +67,12 @@ export default function Page() {
           Reset
         </button>
       </div>
-      {/* Pass the filters as props */}
-      <ProductsClient
-        category={category}
-        searchQuery={searchQuery}
-        sortOption={sortOption}
-        page={page}
-        setPage={setPage}
+      <ProductsClient 
+        category={category} 
+        searchQuery={searchQuery} 
+        sortOption={sortOption} 
+        page={page} 
+        setPage={setPage} // Pass setPage here
       />
     </div>
   );

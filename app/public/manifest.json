@@ -3,7 +3,7 @@
     "short_name": "E-commerce",
     "icons": [
       {
-        "src": "/icons/add-to-cart.png",
+        "src": "/icons/icon-192x192.png",
         "type": "image/png",
         "sizes": "192x192"
       },

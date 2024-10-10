@@ -26,12 +26,6 @@ export async function GET(request, { params }) {
   }
 
   try {
-    // Log all product IDs in the collection for debugging purposes
-    const productsCollection = collection(db, 'products');
-    const productsSnapshot = await getDocs(productsCollection);
-    const productIDs = productsSnapshot.docs.map(doc => doc.id);
-    console.log("Available product IDs:", productIDs);
-
     // Check if the requested product exists with padded ID
     const productRef = doc(db, 'products', id);
     const productSnap = await getDoc(productRef);

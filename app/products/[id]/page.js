@@ -20,7 +20,7 @@ export default async function ProductPage({ params }) {
 
   try {
     // Fetch product data using the padded product ID from the local API
-    const res = await fetch(`http://localhost:3000/api/products/${paddedID}`);
+    const res = await fetch(`http://localhost:3000/api/products/${paddedID}`);  // Ensure this is your local API
 
     console.log("Fetch response:", res);
 
@@ -37,7 +37,7 @@ export default async function ProductPage({ params }) {
       }
     }
 
-    product = await res.json();
+    product = await res.json();  // This will contain your product data
   } catch (err) {
     error = err.message;
     console.error("Error fetching product:", error);

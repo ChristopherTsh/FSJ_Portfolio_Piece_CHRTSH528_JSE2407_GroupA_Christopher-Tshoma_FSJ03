@@ -6,7 +6,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebaseConfig';
 import ProductsClient from './components/ProductsClient';
 import CategoryFilter from './components/CategoryFilter';
-import Searchbar from './components/Searchbar';
+import Searchbar from './components/SearchBar';
 import SortOptions from './components/SortOptions';
 import ErrorMessage from './components/ErrorMessage';
 import Loading from './components/Loading';

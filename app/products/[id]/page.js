@@ -3,31 +3,44 @@ import ProductDetail from "./ProductImageGallery"; // Import ProductDetail compo
 
 /**
  * ProductPage component fetches and displays the details of a specific product.
+ * Pads the product ID to ensure it matches the desired length.
  *
- * This is a server-side component that fetches product data based on the provided `params.id`
- * and handles errors in fetching the product. If the product data is successfully retrieved,
- * it passes the data to the `ProductDetail` component for rendering.
- *
- * @param {Object} props - The component props
- * @param {Object} props.params - The route parameters
- * @param {string} props.params.id - The ID of the product to fetch
- * @returns {JSX.Element} The ProductPage component
+ * @param {Object} props - The component props.
+ * @param {Object} props.params - The route parameters.
+ * @param {string} props.params.id - The ID of the product to fetch.
+ * @returns {JSX.Element} The ProductPage component.
  */
 export default async function ProductPage({ params }) {
   let product = null;
   let error = null;
 
+  // Pad the product ID to be 3 digits long
+  const paddedID = params.id.padStart(3, '0');
+  console.log(`Fetching product with padded ID: ${paddedID}`);
+
   try {
-    // Fetch product data using the product ID
-    const res = await fetch(`https://next-ecommerce-api.vercel.app/products/${params.id}`);
+    // Fetch product data using the padded product ID from the local API
+    const res = await fetch(`http://localhost:3000/api/products/${paddedID}`);
+
+    console.log("Fetch response:", res);
 
     if (!res.ok) {
-      throw new Error('Failed to fetch product');
+      // Log the error response for debugging
+      const errorData = await res.json();
+      console.error("Error details:", errorData);
+
+      // Throw an error with a custom message based on the response status
+      if (res.status === 404) {
+        throw new Error('Product not found');
+      } else {
+        throw new Error(errorData.error || 'Failed to fetch product');
+      }
     }
 
     product = await res.json();
   } catch (err) {
     error = err.message;
+    console.error("Error fetching product:", error);
   }
 
   // If there was an error, display it
@@ -49,8 +62,8 @@ export default async function ProductPage({ params }) {
         </a>
       </Link>
 
-      {/* Pass product data to ProductDetail */}
-      <ProductDetail product={product} /> {/* Pass product as a prop */}
+      {/* Pass product data to ProductDetail for rendering */}
+      <ProductDetail product={product} />
     </div>
   );
 }

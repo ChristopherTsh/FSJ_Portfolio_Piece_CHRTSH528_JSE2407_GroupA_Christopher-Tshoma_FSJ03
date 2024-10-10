@@ -1,51 +1,26 @@
-import { verifyToken } from '../../../lib/verifyToken';
-
+// app/utils/reviewApi.js
 /**
- * API handler for adding a review.
+ * Adds a review to the specified product.
  *
- * This function handles POST requests to add a review for a specific product.
- * It verifies the user's token, checks that all required fields are present, 
- * and responds with success or an error message. The review is mocked as 
- * being saved in-memory. 
- *
- * @async
- * @function handler
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @returns {Promise<void>} A Promise that resolves when the response is sent.
- * 
- * @throws {Error} Throws an error if the request method is not POST or if the 
- *                 token verification fails.
+ * @param {string} productId - The ID of the product to add the review to.
+ * @param {Object} reviewData - The review data object to be added.
+ * @throws Will throw an error if the productId is invalid.
+ * @returns {Promise<void>} A promise that resolves if the review is added successfully.
  */
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+export async function addReview(productId, reviewData) {
+  // Check if productId is valid
+  if (typeof productId !== 'string' || productId.trim() === '') {
+      console.error('Received invalid product ID:', productId);
+      throw new Error('Invalid product ID');
   }
 
   try {
-    await verifyToken(req, res);
-
-    const { productId, rating, comment, email, name } = req.body;
-
-    if (!productId || !rating || !comment || !email || !name) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    // Mock saving the review locally (in-memory storage)
-    const review = {
-      id: Date.now().toString(),
-      productId,
-      rating,
-      comment,
-      email,
-      name,
-      date: new Date().toISOString(),
-    };
-
-    // Respond with success
-    res.status(200).json({ message: 'Review added successfully', review });
+      // Proceed with adding the review
+      const docRef = doc(db, 'products', productId, 'reviews');
+      await setDoc(docRef, reviewData);
+      console.log('Review added successfully');
   } catch (error) {
-    console.error('Error adding review:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+      console.error('Error adding review:', error);
+      throw new Error('Failed to add review');
   }
 }

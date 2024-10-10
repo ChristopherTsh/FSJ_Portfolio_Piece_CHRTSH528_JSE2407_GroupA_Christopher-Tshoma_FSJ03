@@ -84,6 +84,13 @@ export default function ProductDetail({ product }) {
    */
   const handleDeleteReview = async (index) => {
     const reviewToDelete = reviewList[index];
+    
+    // Check if reviewToDelete exists and has an ID
+    if (!reviewToDelete || !reviewToDelete.id) {
+      alert("Error: Review does not have a valid ID.");
+      return;
+    }
+  
     const response = await deleteReview(product.id, reviewToDelete.id); 
     if (response.success) {
       setReviewList((prev) => prev.filter((_, i) => i !== index));
@@ -91,6 +98,7 @@ export default function ProductDetail({ product }) {
       alert("Error deleting review. Please try again.");
     }
   };
+  
 
   /**
    * Handles the submission of a new or edited review.

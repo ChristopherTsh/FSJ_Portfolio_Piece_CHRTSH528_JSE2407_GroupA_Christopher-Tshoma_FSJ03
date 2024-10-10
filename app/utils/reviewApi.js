@@ -31,23 +31,22 @@ export async function addReview(productId, reviewData) {
   // Function to handle deleting a review
   export async function deleteReview(productId, reviewId) {
     try {
-      const response = await fetch(`/api/reviews/${productId}/${reviewId}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/products/${productId}/reviews/${reviewId}`, {
+        method: 'DELETE',
       });
   
-      // Check if the response is OK
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
   
-      // Try parsing the response
-      const jsonResponse = await response.json();
-      return jsonResponse;
+      const result = await response.json();
+      return result;
     } catch (error) {
-      console.error("Error deleting review:", error);
-      return { success: false, message: error.message };
+      console.error('Error deleting review:', error);
+      return { success: false, message: 'Failed to delete review' };
     }
   }
+  
   
   // Function to handle editing an existing review
   export async function editReview(productId, reviewId, updatedReviewData) {

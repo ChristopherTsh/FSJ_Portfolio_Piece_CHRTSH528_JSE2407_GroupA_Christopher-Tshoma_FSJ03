@@ -22,18 +22,20 @@ export async function POST(request, { params }) {
 
 // Function to handle DELETE request (Deleting a review)
 export async function DELETE(request, { params }) {
-  const { productId, reviewId } = params;
-
-  try {
-    // Reference to the specific review document inside the reviews subcollection of the product
-    const reviewDocRef = doc(db, 'products', productId, 'reviews', reviewId);
-
-    // Delete the document from Firestore
-    await deleteDoc(reviewDocRef);
-
-    return NextResponse.json({ success: true, message: 'Review deleted successfully' }, { status: 200 });
-  } catch (error) {
-    console.error('Error deleting review:', error);
-    return NextResponse.json({ success: false, message: 'Failed to delete review' }, { status: 500 });
+    const { productId, reviewId } = params; // Extract dynamic params
+  
+    if (!productId || !reviewId) {
+      return NextResponse.json({ success: false, message: 'Missing productId or reviewId' }, { status: 400 });
+    }
+  
+    try {
+      // Reference to the review document inside the Firestore subcollection
+      const reviewDocRef = doc(db, 'products', productId, 'reviews', reviewId);
+      await deleteDoc(reviewDocRef); // Delete the review document
+  
+      return NextResponse.json({ success: true, message: 'Review deleted successfully' }, { status: 200 });
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      return NextResponse.json({ success: false, message: 'Error deleting review', error: error.message }, { status: 500 });
+    }
   }
-}

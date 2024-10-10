@@ -1,5 +1,5 @@
 import Link from "next/link";
-import ProductDetail from "./ProductImageGallery"; // Import ProductDetail component
+import ProductDetail from "./ProductImageGallery"; // Import your ProductDetail component
 
 /**
  * ProductPage component fetches and displays the details of a specific product.
@@ -20,24 +20,19 @@ export default async function ProductPage({ params }) {
 
   try {
     // Fetch product data using the padded product ID from the local API
-    const res = await fetch(`http://localhost:3000/api/products/${paddedID}`);  // Ensure this is your local API
+    const res = await fetch(`http://localhost:3000/api/products/${paddedID}`, { cache: 'no-store' });  // Ensure no caching issues
 
-    console.log("Fetch response:", res);
+    console.log("Fetch response status:", res.status);
 
     if (!res.ok) {
-      // Log the error response for debugging
-      const errorData = await res.json();
-      console.error("Error details:", errorData);
-
-      // Throw an error with a custom message based on the response status
-      if (res.status === 404) {
-        throw new Error('Product not found');
-      } else {
-        throw new Error(errorData.error || 'Failed to fetch product');
-      }
+      // If the response is not ok, handle errors accordingly
+      throw new Error(res.status === 404 ? 'Product not found' : 'Failed to fetch product');
     }
 
-    product = await res.json();  // This will contain your product data
+    // Parse the JSON data
+    product = await res.json();
+    console.log("Fetched product:", product);
+
   } catch (err) {
     error = err.message;
     console.error("Error fetching product:", error);
@@ -62,7 +57,7 @@ export default async function ProductPage({ params }) {
         </a>
       </Link>
 
-      {/* Pass product data to ProductDetail for rendering */}
+      {/* Render Product Details */}
       <ProductDetail product={product} />
     </div>
   );

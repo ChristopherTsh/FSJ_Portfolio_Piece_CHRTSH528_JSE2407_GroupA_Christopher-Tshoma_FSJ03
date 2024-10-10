@@ -1,48 +1,26 @@
-import { db } from '../../../lib/firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+// import { NextResponse } from 'next/server';
+// import { db } from '../../../lib/firebaseConfig';
+// import { doc, getDoc } from 'firebase/firestore';
 
-/**
- * API handler for fetching a product by its ID from Firestore.
- *
- * This function handles incoming requests to fetch a specific product 
- * from the 'products' collection in Firestore based on the provided ID.
- * It returns the product data as a JSON response. If the product does 
- * not exist, it returns a 404 status with an error message. In case of 
- * an error during the fetch operation, it logs the error and returns 
- * a 500 status with an error message.
- *
- * @async
- * @function handler
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @returns {Promise<void>} A Promise that resolves when the response is sent.
- * 
- * @throws {Error} Throws an error if the fetch operation fails.
- */
-export default async function handler(req, res) {
-  // Extracting the product ID from the query parameters
-  const { id } = req.query;
+// export async function GET(request, { params }) {
+//   let { id } = params;
+//   id = id.padStart(3, '0');
+//   console.log(`API Fetching product with padded ID: ${id}`);
 
-  try {
-    // Reference to the specific product document in Firestore
-    const docRef = doc(db, 'products', id);
+//   try {
+//     const productRef = doc(db, 'products', id);
+//     const productSnap = await getDoc(productRef);
 
-    // Fetching the product document from Firestore
-    const docSnap = await getDoc(docRef);
+//     if (!productSnap.exists()) {
+//       console.log(`Product with ID ${id} not found`);
+//       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+//     }
 
-    // Checking if the document exists
-    if (docSnap.exists()) {
-      // Returning the product data as a JSON response
-      res.status(200).json({ id: docSnap.id, ...docSnap.data() });
-    } else {
-      // Returning a 404 status if the product is not found
-      res.status(404).json({ error: 'Product not found' });
-    }
-  } catch (error) {
-    // Logging the error to the console
-    console.error('Error fetching product:', error);
-    
-    // Returning a 500 status response with an error message
-    res.status(500).json({ error: 'Error fetching product' });
-  }
-}
+//     const productData = productSnap.data();
+//     console.log(`Product data for ID ${id}:`, productData);
+//     return NextResponse.json(productData, { status: 200 });
+//   } catch (error) {
+//     console.error('Error fetching product:', error);
+//     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+//   }
+// }

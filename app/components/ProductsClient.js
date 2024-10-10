@@ -1,3 +1,5 @@
+// app/products/components/ProductsClient.js
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,22 +8,25 @@ import { db } from '../../lib/firebaseConfig';
 import ProductGrid from './ProductGrid';
 import Loading from './Loading';
 import ErrorMessage from './ErrorMessage';
+import Pagination from './Pagination';
 
 /**
  * ProductsClient component fetches and displays products from Firebase Firestore.
  *
- * @param {Object} props - The component props
- * @param {string} props.category - The selected product category for filtering
- * @param {string} props.searchQuery - The search query for filtering products
- * @param {string} props.sortOption - The selected sorting option ('asc' or 'desc')
- * @param {number} props.page - The current page number for pagination (not implemented)
- * @param {function} props.setPage - The function to set the current page number (not implemented)
- * @returns {JSX.Element} The ProductsClient component
+ * @param {Object} props - The component props.
+ * @param {string} props.category - The selected product category for filtering.
+ * @param {string} props.searchQuery - The search query for filtering products.
+ * @param {string} props.sortOption - The selected sorting option ('asc' or 'desc').
+ * @param {number} props.page - The current page number for pagination.
+ * @param {function} props.setPage - The function to set the current page number.
+ * @returns {JSX.Element} The ProductsClient component.
  */
 export default function ProductsClient({ category, searchQuery, sortOption, page, setPage }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const PAGE_SIZE = 20;
 
   // Fetch products from Firebase Firestore
   useEffect(() => {
@@ -53,11 +58,7 @@ export default function ProductsClient({ category, searchQuery, sortOption, page
 
           // Sort products
           const sortedProducts = filteredProducts.sort((a, b) => {
-            if (sortOption === 'asc') {
-              return a.price - b.price;
-            } else {
-              return b.price - a.price;
-            }
+            return sortOption === 'asc' ? a.price - b.price : b.price - a.price;
           });
 
           setProducts(sortedProducts);
@@ -73,13 +74,20 @@ export default function ProductsClient({ category, searchQuery, sortOption, page
     fetchProducts();
   }, [category, searchQuery, sortOption]);
 
+  // Pagination logic
+  const paginatedProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   if (loading) return <Loading />;
   if (error) return <ErrorMessage message={error} />;
 
   return (
     <div>
-      <ProductGrid products={products} />
-      {/* Pagination logic could be added here if needed */}
+      <ProductGrid products={paginatedProducts} />
+      <Pagination
+        currentPage={page}
+        totalProducts={products.length}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

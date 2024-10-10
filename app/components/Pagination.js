@@ -15,7 +15,7 @@
  * @returns {JSX.Element} The rendered pagination buttons.
  */
 export default function Pagination({ currentPage, totalProducts, onPageChange }) {
-  const PAGE_SIZE = 20; // This should match the page size used in your API
+  const PAGE_SIZE = 20;
   const totalPages = Math.ceil(totalProducts / PAGE_SIZE);
 
   return (

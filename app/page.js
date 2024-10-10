@@ -29,16 +29,11 @@ export default function Page() {
     console.log('Page state updated:', { category, searchQuery, sortOption, page });
   }, [category, searchQuery, sortOption, page]);
 
-  /**
-   * Resets the filter options to their default values.
-   * Resets category to 'all', search query to an empty string,
-   * sort option to 'asc', and page to 1.
-   */
   const resetFilters = () => {
     setCategory('all');
     setSearchQuery('');
     setSortOption('asc');
-    setPage(1); // Reset page to 1 when filters are reset
+    setPage(1);
   };
 
   // Fetch categories from Firebase
@@ -48,9 +43,8 @@ export default function Page() {
         setLoading(true);
         const categoriesRef = collection(db, 'categories');
         const snapshot = await getDocs(categoriesRef);
-        // Access the array of categories directly from the document
         const categoryData = snapshot.docs.map((doc) => doc.data().categories)[0];
-        setCategories(['all', ...categoryData]);  // Include "all" in the categories list
+        setCategories(['all', ...categoryData]);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -63,6 +57,7 @@ export default function Page() {
   }, []);
 
   if (loading) return <Loading />;
+  if (error) return <ErrorMessage message={error} />;
 
   return (
     <div className="max-w-7xl mx-auto p-4">
@@ -83,7 +78,7 @@ export default function Page() {
         searchQuery={searchQuery} 
         sortOption={sortOption} 
         page={page} 
-        setPage={setPage} // Pass setPage here
+        setPage={setPage} 
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../lib/firebaseConfig';
+import { db } from '../../../lib/firebaseConfig';
 
 /**
  * Handles GET requests to fetch categories from Firestore.

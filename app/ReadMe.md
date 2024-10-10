@@ -73,5 +73,7 @@ To add a product review:
 **Navbar:** Displays navigation links and authentication options.
 Each component is designed to be reusable and modular, ensuring a clean and maintainable codebase.
 
+[vercel](https://fsj-portfolio-piece-chrtsh-528-jse-2407-group-a-chri-rl1eh5kun.vercel.app/)
+
 ## License
 This project is licensed under the MIT License.
